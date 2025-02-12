@@ -23,6 +23,8 @@ async def main():
     input = await Actor.get_input()
     scraper_type = input.get('scraperType')
 
+    print("--------------------", input)
+
     if not scraper_type:
         raise ValueError('scraperType parameter is required')
 
