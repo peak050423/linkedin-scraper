@@ -1,0 +1,11 @@
+{
+    "name": "linkedin-scraper",
+    "version": "0.0.1",
+    "buildTag": "latest",
+    "env": {
+        "APIFY_DEFAULT_KEY_VALUE_STORE_ID": "default",
+        "APIFY_DEFAULT_DATASET_ID": "default",
+        "APIFY_DEFAULT_REQUEST_QUEUE_ID": "default"
+    },
+    "dockerfile": "./Dockerfile"
+}
