@@ -1,16 +1,9 @@
 from datetime import datetime
 import platform
-import os
 import io
 import csv
-from flask import Flask, request, jsonify, Response, send_from_directory
-from flask_cors import CORS
 from src import getFollowerList, getLikersList
 from apify import Actor
-
-# Initialize Flask app
-app = Flask(__name__, static_folder="frontend")
-CORS(app)  # Enable CORS for frontend requests
 
 def get_current_timestamp():
     """
@@ -22,70 +15,10 @@ def get_current_timestamp():
     else:
         return current_datetime.strftime('%-m-%d-%Y_%-I-%M-%p')
 
-@app.route('/')
-def index():
-    """ Serve the frontend (index.html) """
-    return send_from_directory(app.static_folder, "index.html")
-
-@app.route('/scrape', methods=['GET'])
-def scrape():
-    """ Handles LinkedIn scraping requests """
-    scraper_type = request.args.get('scraperType')
-
-    if not scraper_type:
-        return jsonify({'error': 'scraperType parameter is required'}), 400
-
-    current_timestamp = get_current_timestamp()
-    result = []
-    filename = ""
-
-    if scraper_type == '1':  # Company Followers Scraper
-        company_url = request.args.get('companyUrl')
-        follower_number = request.args.get('followerNumber')
-
-        if not company_url or not follower_number:
-            return jsonify({'error': 'Missing required parameters for company scraper'}), 400
-
-        company_id = company_url.split('/')[4]
-        followers_info = getFollowerList(company_id, follower_number, current_timestamp)
-
-        if not followers_info:
-            return jsonify({'error': 'No data found'}), 404
-
-        result = followers_info
-        filename = f'followers_data_{current_timestamp}.csv'
-
-    elif scraper_type == '2':  # Post Like Scraper
-        post_url = request.args.get('postUrl')
-
-        if not post_url:
-            return jsonify({'error': 'Missing postUrl for post-like scraper'}), 400
-
-        likers_info = getLikersList(post_url, current_timestamp)
-
-        if not likers_info:
-            return jsonify({'error': 'No data found'}), 404
-
-        result = likers_info
-        filename = f'likers_data_{current_timestamp}.csv'
-
-    else:
-        return jsonify({'error': 'Invalid scraper type'}), 400
-
-    # Convert data to CSV format
-    if isinstance(result, list) and len(result) > 0 and isinstance(result[0], dict):
-        output = io.StringIO()
-        csv_writer = csv.DictWriter(output, fieldnames=result[0].keys())
-        csv_writer.writeheader()
-        csv_writer.writerows(result)
-        csv_data = output.getvalue()
-        output.close()
-
-        return jsonify({"filename": filename, "csvData": csv_data})
-
-    return jsonify({'error': 'Unexpected data format'}), 500
-
 async def main():
+    # Initialize the actor
+    await Actor.init()
+
     # Get input from Apify
     input = await Actor.get_input()
     scraper_type = input.get('scraperType')
@@ -149,7 +82,4 @@ async def main():
         raise ValueError('Unexpected data format')
 
 # Run the main function
-Actor.run(main)
-
-if __name__ == '__main__':
-    Actor.run(app.run(debug=True, host="0.0.0.0", port=5000, use_reloader=False))
+Actor.main(main)
