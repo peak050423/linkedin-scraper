@@ -80,12 +80,11 @@ https://www.linkedin.com/feed/update/urn:li:activity:1234567890/
 
 ### **🔹 4️⃣ Click Start Scraping**
 
-- he scraper starts, and a loading animation appears in the button.
-
-
-Website Url: https://linkedin-scraper-qcwi.onrender.com/
+- The scraper starts, and a loading animation appears on the button.
 - Once completed, the CSV file automatically downloads.
 
 ### **🔹 5️⃣ Open Your CSV File**
 
 - The scraped data is saved in a CSV file, ready for analysis
+
+Website Url: https://linkedin-scraper-qcwi.onrender.com/
