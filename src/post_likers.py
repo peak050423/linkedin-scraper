@@ -30,7 +30,7 @@ def getLikersList(post_url, current_timestamp):
 
         for i in range(request_num):
 
-            url = f'https://www.linkedin.com/voyager/api/graphql?includeWebMetadata=true&variables=(count:100,start:{i * 100},threadUrn:urn%3Ali%3AugcPost%3A7290004779827703810)&queryId=voyagerSocialDashReactions.cab051ffdf47c41130cdd414e0097402'
+            url = f'https://www.linkedin.com/voyager/api/graphql?includeWebMetadata=true&variables=(count:100,start:{i * 100},threadUrn:urn%3Ali%3AugcPost%3A{post_id})&queryId=voyagerSocialDashReactions.cab051ffdf47c41130cdd414e0097402'
             response = fetch_data(url)
 
             if response:

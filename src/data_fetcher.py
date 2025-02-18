@@ -1,6 +1,7 @@
 import requests
 from .cookie_loader import load_cookies
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import json
 
 cookies = load_cookies('linkedin_cookies.json')
 

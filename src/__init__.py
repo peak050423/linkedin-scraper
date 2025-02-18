@@ -1,4 +1,5 @@
 from .company_follower import getFollowerList
+from .company_follower import getfollowers
 from .cookie_loader import load_cookies
 from .csv_writer import write_to_csv
 from .data_fetcher import fetch_data

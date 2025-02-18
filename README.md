@@ -2,15 +2,16 @@
 
 ## 📌 Overview
 
-LinkedIn Scraper is a tool that allows users to extract data from LinkedIn:
+LinkedIn Scraper is a web-based tool that allows users to extract data from LinkedIn:
 
 1. **Company Followers Scraper** – Extract followers of a LinkedIn company page.
 2. **Post Likers Scraper** – Get a list of users who liked a specific LinkedIn post.
 
-This tool enables users to scrape LinkedIn data and download the results as a CSV file.  
+This tool enables users to scrape LinkedIn data with a simple UI and download the results as a CSV file.  
 Built with:
 
-- **Backend:** Python
+- **Frontend:** HTML, CSS, JavaScript (No jQuery, pure JS)
+- **Backend:** Flask (Python)
 - **Data Output:** CSV file download
 
 ---
@@ -39,7 +40,7 @@ Since these APIs are not officially supported by LinkedIn:
 
 ### **🔹 1️⃣ Install Dependencies**
 
-> **Backend (Python)**
+> **Backend (Flask & Python)**
 
 ```bash
 pip install -r requirements.txt

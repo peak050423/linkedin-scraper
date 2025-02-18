@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkedIn Scraper</title>
+    <style>
+       body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin: 15px 0;
+        }
+
+        input[type="text"],
+        input[type="number"], option {
+            width: 97%;
+            padding: 10px;
+            margin: 5px 0;
+            display: block;
+            border: 1px solid #ccc;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            display: block;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            transition: opacity 0.3s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid white;
+            border-radius: 50%;
+            border-top: 2px solid transparent;
+            animation: spin 1s linear infinite;
+            margin-right: 5px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        #result {
+            margin-top: 10px;
+        } 
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>LinkedIn Scraper</h1>
+        <form id="scraperForm">
+            <label for="scraperType">Select Scraper Type:</label>
+            <select id="scraperType" name="scraperType">
+                <option value="1">Company Follower Scraper</option>
+                <option value="2">Post Like Scraper</option>
+            </select>
+
+            <div id="companyInputs">
+                <label for="companyUrl">Enter the Company URL:</label>
+                <input type="text" id="companyUrl" name="companyUrl">
+
+                <label for="followerNumber">Enter the Follower Number:</label>
+                <input type="number" id="followerNumber" name="followerNumber">
+            </div>
+
+            <div id="postInputs" style="display: none;">
+                <label for="postUrl">Enter the Post URL:</label>
+                <input type="text" id="postUrl" name="postUrl">
+            </div>
+
+            <button type="submit" id="submitButton">
+                <span id="buttonText">Start Scraping</span>
+            </button>
+
+            <div id="result"></div>
+        </form>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+                const form = document.getElementById('scraperForm');
+                const scraperType = document.getElementById('scraperType');
+
+                if (!form || !scraperType) return;
+
+                form.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    handleScraping();
+                });
+
+                scraperType.addEventListener('change', updateInputFields);
+            });
+
+
+            function handleScraping() {
+                const scraperType = document.getElementById('scraperType').value;
+                const submitButton = document.getElementById('submitButton');
+                const buttonText = document.getElementById('buttonText');
+
+                let params = {};
+
+                if (scraperType === '1') {
+                    params = getCompanyScraperParams();
+                } else if (scraperType === '2') {
+                    params = getPostScraperParams();
+                } else {
+                    displayError("❌ Invalid scraper type selected.");
+                    return;
+                }
+
+                if (!params) return;
+
+                submitButton.disabled = true;
+                buttonText.innerHTML = `<span class="loading"></span> Scraping...`;
+
+                fetchAndDownloadData(params, submitButton);
+            }
+
+            function getCompanyScraperParams() {
+                const companyUrl = document.getElementById('companyUrl').value.trim();
+                const followerNumber = document.getElementById('followerNumber').value.trim();
+
+                if (!isValidLinkedInCompanyURL(companyUrl)) {
+                    displayError("❌ Invalid LinkedIn company URL. Use: https://www.linkedin.com/company/.../admin/dashboard/");
+                    return null;
+                }
+
+                if (!followerNumber || followerNumber <= 0) {
+                    displayError("❌ Please enter a valid follower number.");
+                    return null;
+                }
+
+                return { scraperType: '1', companyUrl, followerNumber };
+            }
+
+            function getPostScraperParams() {
+                const postUrl = document.getElementById('postUrl').value.trim();
+
+                if (!isValidLinkedInPostURL(postUrl)) {
+                    displayError("❌ Invalid LinkedIn post URL. Use: https://www.linkedin.com/feed/update/urn:li:activity:1234567890/");
+                    return null;
+                }
+
+                return { scraperType: '2', postUrl };
+            }
+
+            function fetchAndDownloadData(params, submitButton) {
+                const endpoint = 'http://127.0.0.1:5000/scrape';
+                // const endpoint = 'https://linkedin-scraper-qcwi.onrender.com//scrape';
+                const urlParams = new URLSearchParams(params);
+                const buttonText = document.getElementById('buttonText');
+
+                fetch(`${endpoint}?${urlParams.toString()}`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                    .then(response => {
+                        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                        return response.json();
+                    })
+                    .then(data => {
+                        downloadCSV(data.filename || 'scraper_data.csv', data.csvData || '');
+                    })
+                    .catch(error => {
+                        displayError("❌ Error: " + error.message);
+                    })
+                    .finally(() => {
+                        submitButton.disabled = false;
+                        buttonText.innerHTML = "Start Scraping";
+                        displayError("");
+                    });
+            }
+
+            function downloadCSV(filename, csvData) {
+                const blob = new Blob([csvData], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+
+                document.getElementById('result').textContent = "✅ Scraping completed! CSV downloaded.";
+            }
+
+            function updateInputFields() {
+                const selectedType = document.getElementById('scraperType').value;
+                document.getElementById('companyInputs').style.display = selectedType === '1' ? 'block' : 'none';
+                document.getElementById('postInputs').style.display = selectedType === '2' ? 'block' : 'none';
+                displayError("");
+            }
+
+            function displayError(message) {
+                document.getElementById('result').textContent = message;
+            }
+
+            function isValidLinkedInCompanyURL(url) {
+                return /^https:\/\/www\.linkedin\.com\/company\/[^/]+\/admin\/dashboard\/?$/.test(url);
+            }
+
+            function isValidLinkedInPostURL(url) {
+                return /^https:\/\/www\.linkedin\.com\/feed\/update\/urn:li:activity:\d+\/?$/.test(url);
+            }
+
+    </script>
+</body>
+
+</html>
